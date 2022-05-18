@@ -16,11 +16,18 @@ const getUser = (req, res) => {
   User.findById(user)
     .then((userInfo) => {
       if (!userInfo) {
-        return res.status(ERR_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(ERR_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
+        return;
       }
       return res.send(userInfo);
     })
-    .catch(() => res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' }));
+    .catch((err) => {
+      if (err.kind === 'ObjectId') {
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданный _id некорректный' });
+        return;
+      }
+      return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
+    });
 };
 
 const createUser = (req, res) => {
@@ -32,7 +39,8 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
@@ -50,7 +58,8 @@ const updateUserProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
@@ -68,7 +77,8 @@ const updateUserAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });

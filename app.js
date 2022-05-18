@@ -24,8 +24,8 @@ app.use((req, _, next) => {
   next();
 });
 
-app.use('/', router);
+app.use('/users', router);
 
-app.use('/', routerCard);
+app.use('/cards', routerCard);
 
 app.listen(PORT);

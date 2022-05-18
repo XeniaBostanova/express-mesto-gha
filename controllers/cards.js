@@ -4,27 +4,29 @@ const ERR_NOT_FOUND = 404;
 const ERR_SERVER = 500;
 const ERR_BAD_REQUEST = 400;
 
+const getCards = (_, res) => {
+  Card.find({})
+    .populate('owner')
+    .then((cards) => res.send(cards))
+    . catch(() => res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' }));
+};
+
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((cardInfo) => {
       if (!cardInfo) {
-        return res.status(ERR_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+        res.status(ERR_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+        return;
       }
       return res.send({ message: 'Карточка удалена' });
     })
     .catch((err) => {
-      console.log('err', err);
       if (err.kind === 'ObjectId') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданный _id некорректный' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданный _id некорректный' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
-};
-
-const getCards = (_, res) => {
-  Card.find({})
-    .then((cards) => res.send(cards))
-    . catch(() => res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' }));
 };
 
 const createCard = (req, res) => {
@@ -34,7 +36,8 @@ const createCard = (req, res) => {
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
@@ -48,13 +51,15 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(ERR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+        res.status(ERR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+        return;
       }
       return res.send(card);
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки лайка' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные для постановки лайка' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
@@ -74,7 +79,8 @@ const dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.kind === 'ObjectId') {
-        return res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные для снятия лайка' });
+        res.status(ERR_BAD_REQUEST).send({ message: 'Переданы некорректные данные для снятия лайка' });
+        return;
       }
       return res.status(ERR_SERVER).send({ message: 'Ошибка по умолчанию' });
     });
