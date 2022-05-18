@@ -28,4 +28,9 @@ app.use('/users', router);
 
 app.use('/cards', routerCard);
 
+app.use((_, res) => {
+  const ERR_NOT_FOUND = 404;
+  res.status(ERR_NOT_FOUND).send({ message: 'Страница по указанному URL не найдена' });
+});
+
 app.listen(PORT);
