@@ -1,7 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const router = require('./routes/users');
 const routerCard = require('./routes/cards');
+const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/not-found-err');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -16,21 +20,21 @@ const app = express();
 
 app.use(express.json());
 
-app.use((req, _, next) => {
-  req.user = {
-    _id: '62823deb1e0cc3090d02ef28',
-  };
+app.post('/signin', login);
+app.post('/signup', createUser);
 
-  next();
-});
+app.use('/users', auth, router);
+app.use('/cards', auth, routerCard);
 
-app.use('/users', router);
+app.use((_, res, next) => next(new NotFoundError('Страница по указанному URL не найдена')));
 
-app.use('/cards', routerCard);
+// eslint-disable-next-line no-unused-vars
+app.use((err, _, res, next) => {
+  if (err.statusCode) {
+    return res.status(err.statusCode).send({ message: err.message || 'Ошибка по умолчанию' });
+  }
 
-app.use((_, res) => {
-  const ERR_NOT_FOUND = 404;
-  res.status(ERR_NOT_FOUND).send({ message: 'Страница по указанному URL не найдена' });
+  return res.status(500).send({ message: 'Ошибка по умолчанию' });
 });
 
 app.listen(PORT);
