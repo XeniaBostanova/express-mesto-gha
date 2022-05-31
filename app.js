@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const { celebrate, Joi } = require('celebrate');
 const router = require('./routes/users');
 const routerCard = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -21,7 +22,14 @@ const app = express();
 app.use(express.json());
 
 app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }).unknown(true),
+}), createUser);
 
 app.use('/users', auth, router);
 app.use('/cards', auth, routerCard);

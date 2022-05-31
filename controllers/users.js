@@ -40,7 +40,7 @@ const createUser = (req, res, next) => {
   } = req.body;
 
   if (!email || !password) {
-    return next(new NotFoundError('Не передан email или пароль'));
+    return next(new BadRequestError('Не передан email или пароль'));
   }
 
   bcrypt.hash(password, saltRounds)
@@ -51,6 +51,9 @@ const createUser = (req, res, next) => {
         res.send(user);
       }))
     .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+      }
       if (err.code === MONGO_DUPLICATE_KEY_CODE) {
         return next(new ConflictError('Пользователь с таким email уже существует'));
       }

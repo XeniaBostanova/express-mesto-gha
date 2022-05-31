@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 const bcrypt = require('bcrypt');
-
-// eslint-disable-next-line no-useless-escape
-const regex = /(http|https):\/\/\w{0,}(\-\w{0,}){0,}(\.\w{0,})?\.\w{0,}([\-\._~:\/?#\[\]@!\$&'\(\)\*\+,;=]\w{0,}){0,}#?/;
+const BadRequestError = require('../errors/bad-request-err');
+const { reg } = require('../utils/reg');
 
 const userSchema = new mongoose.Schema(
   {
@@ -23,7 +22,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
       validate: {
-        validator: (val) => regex.test(val),
+        validator: (val) => reg.test(val),
         message: 'Некорректный формат URL',
       },
     },
@@ -53,13 +52,13 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
+        return Promise.reject(new BadRequestError('Неправильные почта или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неправильные почта или пароль'));
+            return Promise.reject(new BadRequestError('Неправильные почта или пароль'));
           }
           return user;
         });
@@ -67,3 +66,4 @@ userSchema.statics.findUserByCredentials = function (email, password) {
 };
 
 module.exports = mongoose.model('user', userSchema);
+// module.exports = { regex };

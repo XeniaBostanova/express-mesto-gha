@@ -7,6 +7,7 @@ const {
   updateUserAvatar,
   getCurrentUser,
 } = require('../controllers/users');
+const { reg } = require('../utils/reg');
 
 router.get('/', getUsers);
 
@@ -19,7 +20,11 @@ router.patch('/me', celebrate({
   }).unknown(true),
 }), updateUserProfile);
 
-router.patch('/me/avatar', updateUserAvatar);
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().pattern(reg).required(),
+  }),
+}), updateUserAvatar);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
