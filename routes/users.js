@@ -7,12 +7,11 @@ const {
   updateUserAvatar,
   getCurrentUser,
 } = require('../controllers/users');
-const auth = require('../middlewares/auth');
 const { reg } = require('../utils/reg');
 
-router.get('/', auth, getUsers);
+router.get('/', getUsers);
 
-router.get('/me', auth, getCurrentUser);
+router.get('/me', getCurrentUser);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
