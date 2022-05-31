@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const router = require('./routes/users');
 const routerCard = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
@@ -35,6 +35,8 @@ app.use('/users', auth, router);
 app.use('/cards', auth, routerCard);
 
 app.use((_, res, next) => next(new NotFoundError('Страница по указанному URL не найдена')));
+
+app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _, res, next) => {
