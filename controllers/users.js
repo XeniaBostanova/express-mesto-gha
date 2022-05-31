@@ -48,7 +48,12 @@ const createUser = (req, res, next) => {
       name, about, avatar, email, password: hash,
     })
       .then((user) => {
-        res.send(user);
+        res.send({
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email,
+        });
       }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -101,7 +106,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new NotFoundError('Не передан email или пароль'));
+    return next(new BadRequestError('Не передан email или пароль'));
   }
 
   return User.findUserByCredentials(email, password)

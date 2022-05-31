@@ -7,11 +7,12 @@ const {
   updateUserAvatar,
   getCurrentUser,
 } = require('../controllers/users');
+const auth = require('../middlewares/auth');
 const { reg } = require('../utils/reg');
 
-router.get('/', getUsers);
+router.get('/', auth, getUsers);
 
-router.get('/me', getCurrentUser);
+router.get('/me', auth, getCurrentUser);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
@@ -22,7 +23,7 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(reg).required(),
+    avatar: Joi.string().pattern(new RegExp(reg)).required(),
   }).unknown(true),
 }), updateUserAvatar);
 
