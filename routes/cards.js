@@ -1,5 +1,6 @@
 const routerCard = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const { reg } = require('../utils/reg');
 const {
   getCards,
   createCard,
@@ -13,7 +14,7 @@ routerCard.get('/', getCards);
 routerCard.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required(),
+    link: Joi.string().required().pattern(new RegExp(reg)),
   }).unknown(true),
 }), createCard);
 
