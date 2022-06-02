@@ -2,12 +2,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const { celebrate, Joi, errors } = require('celebrate');
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const router = require('./routes/users');
 const routerCard = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found-err');
 const { reg } = require('./utils/reg');
+const errHandler = require('./middlewares/errHandler');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -22,11 +25,15 @@ const app = express();
 
 app.use(express.json());
 
+app.use(cookieParser());
+
+app.use(helmet());
+
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }).required(),
     password: Joi.string().required(),
-  }).unknown(true),
+  }),
 }), login);
 
 app.post('/signup', celebrate({
@@ -36,23 +43,16 @@ app.post('/signup', celebrate({
     avatar: Joi.string().pattern(new RegExp(reg)),
     email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }).required(),
     password: Joi.string().required(),
-  }).unknown(true),
+  }),
 }), createUser);
 
 app.use('/users', auth, router);
 app.use('/cards', auth, routerCard);
 
-app.use((_, res, next) => next(new NotFoundError('Страница по указанному URL не найдена')));
+app.use('*', auth, (_, res, next) => next(new NotFoundError('Страница по указанному URL не найдена')));
 
 app.use(errors());
 
-// eslint-disable-next-line no-unused-vars
-app.use((err, _, res, next) => {
-  if (err.statusCode) {
-    return res.status(err.statusCode).send({ message: err.message || 'Ошибка по умолчанию' });
-  }
-
-  return res.status(500).send({ message: 'Ошибка по умолчанию' });
-});
+app.use(errHandler);
 
 app.listen(PORT);

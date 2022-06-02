@@ -5,7 +5,7 @@ const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 const ConflictError = require('../errors/conflict-err');
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET = 'secret-code' } = process.env;
 const saltRounds = 10;
 const MONGO_DUPLICATE_KEY_CODE = 11000;
 
@@ -33,7 +33,6 @@ const getUser = (req, res, next) => {
     });
 };
 
-// eslint-disable-next-line consistent-return
 const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -43,7 +42,7 @@ const createUser = (req, res, next) => {
     return next(new BadRequestError('Не передан email или пароль'));
   }
 
-  bcrypt.hash(password, saltRounds)
+  return bcrypt.hash(password, saltRounds)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     })
